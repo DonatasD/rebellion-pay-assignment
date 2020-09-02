@@ -58,3 +58,55 @@ You can share your work in Gitlab, Github, ... even in this server 😊
 There is no right or wrong here, but whatever you come up with will be considered as an indicator towards your abilities to think on your own feet and how your personality might positively impact your code. Surprise us!
 
 🤘 May the force be with you 🤘
+
+# Running Project
+## Setup environment variables
+```
+cp .env.example .env
+```
+
+## Start commands
+```
+npm run start:dev
+```
+or
+```
+npm run build
+npm run start
+```
+or
+```
+docker-compose -f docker-compose.yml up --build -d
+```
+
+# Accessing API
+## Local env
+* http://localhost:3000/client/statistics
+* http://localhost:3000/client/csv
+
+## Hosted env
+* http://ec2-3-10-140-218.eu-west-2.compute.amazonaws.com:3000/client/statistics
+* http://ec2-3-10-140-218.eu-west-2.compute.amazonaws.com:3000/client/csv
+
+> Hosted on personal aws account(micro instance ec2), uses dynamic ip so let me know if it becomes
+> unreachable
+
+# Solution
+## Main Integration Issue
+* Cloudinary API call limit
+* Aggregation is unavailable for tier 1
+* /csv endpoint and avgSize calculation requires retrieving all images (other /statistics
+ endpoint calculations can be done using search API)
+
+## Solution Idea
+* Use caching to minimize requests to Cloudinary
+* /csv endpoint requires retrieving all data, so calculations for /statistics can be done reusing
+ same data.
+* Run scheduled job that updates the cache in time intervals to update cache.
+
+## Remaining Issues
+* API provided goes out of sync after changes has been made in Cloudinary. Cache updates makes this
+ issue less often, however does not guarantee real time data.
+* Choosing good cache update interval.
+* Scaling the app(spawning multiple instances) would require using centralized cache (sharing
+ cache between apps).
