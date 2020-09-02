@@ -1,7 +1,7 @@
 import {StatisticsDTO} from './types';
-import cache, {CacheKey} from '../utils/cache';
+import cache, {CacheKey} from '../utils';
 import {ResourceApiResponse} from 'cloudinary';
-import {arrayMax, arrayMin} from '../utils/helpers';
+import {arrayMax, arrayMin} from '../utils';
 import {Parser} from 'json2csv';
 
 const getStatistics = (): StatisticsDTO => {
@@ -80,7 +80,8 @@ const findImageCountByTypes = (resources: ResourceApiResponse['resources']) => {
   }));
 };
 
-export const service = {
+const service = {
   getStatistics,
   getImageCSV,
 };
+export default service;

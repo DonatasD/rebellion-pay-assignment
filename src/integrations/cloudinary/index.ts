@@ -1,1 +1,2 @@
-export * as CloudinaryService from './service';
+export {default as cloudinaryService} from './service';
+export * from './types';

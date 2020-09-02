@@ -1,64 +1,29 @@
 import client from './client';
+import {DEFAULT_PAGINATION_LIMIT, RESOURCE_TYPE} from './constants';
 import logger from '../../utils/logger';
+import {CloudinaryResponse} from './types';
 
-export const getCountByFormat = (format?: String): Promise<number> => {
-  return client.search
-      .expression(`format=${format}`)
-      .max_results(0)
-      .execute()
-      .then((result) => {
-        logger.debug(result);
-        return result.total_count;
-      })
-      .catch((e) => {
+const getPaginatedImageResponse =
+    async (cursor?: string, limit = DEFAULT_PAGINATION_LIMIT): Promise<CloudinaryResponse | null> => {
+      try {
+        const result = await client.search
+            .max_results(limit)
+            .next_cursor(cursor)
+            .expression(`resource_type=${RESOURCE_TYPE}`)
+            .execute();
+        const rateLimitInfo = {
+          remaining: result.rate_limit_remaining,
+          reset: result.rate_limit_reset_at,
+        };
+        logger.debug(`Cloudinary remaining rate limit info`, rateLimitInfo);
+        return result;
+      } catch (e) {
         logger.error(e);
-        return new Error(`Could not get count for format: ${format}`);
-      });
-};
-export const getLargestPicture = (): Promise<string> => {
-  return client.search
-      .sort_by('bytes', 'desc')
-      .expression('resource_type=image')
-      .max_results(1)
-      .execute()
-      .then((result) => {
-        logger.debug(result);
-        return result.resources.length && result.resources[0].secure_url;
-      })
-      .catch((e) => {
-        logger.error(e);
-        return new Error('Could not find largest picture');
-      });
-};
+        return null;
+      }
+    };
 
-export const getSmallestPicture = (): Promise<string> => {
-  return client.search
-      .sort_by('bytes', 'asc')
-      .expression('resource_type=image')
-      .max_results(1)
-      .execute()
-      .then((result) => {
-        logger.debug(result);
-        return result.resources.length && result.resources[0].secure_url;
-      })
-      .catch((e) => {
-        logger.error(e);
-        return new Error('Could not find largest picture');
-      });
+const service = {
+  getPaginatedImageResponse,
 };
-
-export const getTotalImageCount = (): Promise<number> => {
-  return client.search
-      .expression('resource_type=image')
-      .execute()
-      .then((result) => {
-        logger.debug(result);
-        return result.total_count;
-      })
-      .catch((e) => {
-        logger.error(e);
-        return new Error('Could not find largest picture');
-      });
-};
-
-
+export default service;
