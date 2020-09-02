@@ -8,7 +8,5 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      ENV_NAME: dev
     ports:
       - 3000:3000
